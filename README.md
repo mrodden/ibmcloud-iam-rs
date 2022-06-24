@@ -23,7 +23,7 @@ let tm = TokenManager::new(&api_key);
 // otherwise it will request a new token from IAM, cache it, and return it
 
 // gets a new Token, since none has been retrieved yet
-let tok = tm.token().unwrap();
+let tok1 = tm.token().unwrap();
 
 // returns the same Token as above, since it is cached and not expired
 let tok2 = tm.token().unwrap();
