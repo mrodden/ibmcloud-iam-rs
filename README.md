@@ -43,7 +43,7 @@ use ibmcloud_iam::jwt::validate_token;
 // lazy way of getting a TokenManager with the
 // API key from 'IBMCLOUD_API_KEY' in your environment vars
 let tm = TokenManager::default();
-let tok = tm.token().unwrap();
+let token = tm.token().unwrap();
 
 // base url of the IAM endpoint you'll be using to validate tokens
 let endpoint = "https://iam.cloud.ibm.com";
