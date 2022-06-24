@@ -6,7 +6,7 @@ Current features:
   - Validating IAM access tokens and inspecting the claims within
 
 Future plans:
-  - Authorizing user actions via Subject, Action, Resource requests to the PDP IAM services
+  - Authorizing user actions via Subject, Action, Resource requests to the PDP IAM service
 
 # Usage
 
@@ -30,7 +30,7 @@ let tok2 = tm.token().unwrap();
 
 assert_eq!(tok1, tok2);
 
-// the Bearer token is available at on the Token struct as 'access_token'
+// the Bearer token is available on the Token struct as 'access_token'
 let bearer_token = format!("Bearer {}", tok1.access_token);
 ```
 
