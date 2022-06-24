@@ -2,7 +2,7 @@
 A collection of Rust modules for interacting with IBM Cloud IAM (Identity and Access Managment)
 
 Current features:
-  - Requesting IAM access tokens via an intelligent and thread safe caching mechanism (`ibmcloud_iam::token::TokenManager`)
+  - Requesting IAM access tokens via an intelligent and thread safe caching mechanism (`TokenManager`)
   - Validating IAM access tokens and inspecting the claims within
 
 Future plans:
@@ -14,6 +14,7 @@ Future plans:
 ```rust
 use ibmcloud_iam::token::TokenManager;
 
+// grab an API key from environment variables to use for token getting purposes
 let api_key = std::env::var("IBMCLOUD_API_KEY").unwrap();
 let tm = TokenManager::new(&api_key);
 
