@@ -125,7 +125,7 @@ impl Default for TokenManager {
 
 #[cfg(test)]
 mod tests {
-    use super::{TokenManager, Token};
+    use super::{Token, TokenManager};
 
     use std::sync::Arc;
     use std::thread;
