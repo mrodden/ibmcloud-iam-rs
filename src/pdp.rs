@@ -17,8 +17,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::value::Value;
 
-use crate::token::{Token, TokenManager};
 use crate::error::Error;
+use crate::token::{Token, TokenManager};
 
 pub struct PDPClient {
     endpoint: String,
@@ -31,7 +31,7 @@ pub type Resource = HashMap<String, String>;
 struct AuthorizeRequestBody(Vec<AuthorizeRequest>);
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-struct AuthorizeRequest{
+struct AuthorizeRequest {
     subject: Subject,
     action: String,
     resource: ResourceAttrs,
@@ -39,13 +39,13 @@ struct AuthorizeRequest{
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Subject{
-    access_token_body: String
+pub struct Subject {
+    access_token_body: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 struct ResourceAttrs {
-    attributes: HashMap<String, String>
+    attributes: HashMap<String, String>,
 }
 
 impl From<Resource> for ResourceAttrs {
@@ -61,7 +61,7 @@ struct AuthorizeResponseBody {
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 struct AuthorizeResponse {
-    #[serde(rename="authorizationDecision")]
+    #[serde(rename = "authorizationDecision")]
     pub decision: AuthorizationDecision,
 
     status: String,
@@ -87,7 +87,6 @@ struct SubjectAttrs {
     attributes: HashMap<String, Value>,
 }
 
-
 impl PDPClient {
     pub fn new(api_key: &str, endpoint: &str) -> Self {
         Self {
@@ -102,14 +101,13 @@ impl PDPClient {
         action: &str,
         resource: Resource,
     ) -> Result<AuthorizationDecision, Error> {
-
         let authreq = AuthorizeRequest {
             subject: subject,
             action: action.to_string(),
             resource: resource.into(),
         };
 
-        let req_body = serde_json::to_string(&AuthorizeRequestBody(vec!(authreq))).unwrap();
+        let req_body = serde_json::to_string(&AuthorizeRequestBody(vec![authreq])).unwrap();
 
         let c = reqwest::blocking::Client::new();
 
@@ -130,17 +128,20 @@ impl PDPClient {
         let text = resp.text().expect("Getting body text failed");
 
         if !status.is_success() {
-            return Err(format!("Authz request failed: status='{}', body='{}'", status, text).into());
+            return Err(
+                format!("Authz request failed: status='{}', body='{}'", status, text).into(),
+            );
         }
 
         let mut resp_body = match serde_json::from_str::<AuthorizeResponseBody>(&text) {
             Ok(v) => v,
             Err(_) => {
-                return Err(
-                    format!("Unexpected response from PDP: status='{}', body='{}'", status, text)
-                    .into()
-                );
-            },
+                return Err(format!(
+                    "Unexpected response from PDP: status='{}', body='{}'",
+                    status, text
+                )
+                .into());
+            }
         };
 
         Ok(resp_body.responses.remove(0).decision)
@@ -149,5 +150,7 @@ impl PDPClient {
 
 pub fn subject_from_token(token: &Token) -> Subject {
     let parts: Vec<&str> = token.access_token.split(".").collect();
-    Subject{access_token_body: parts[1].to_string()}
+    Subject {
+        access_token_body: parts[1].to_string(),
+    }
 }

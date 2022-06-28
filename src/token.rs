@@ -20,7 +20,6 @@ use serde_json;
 use tracing::error;
 use url::form_urlencoded;
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     pub access_token: String,
@@ -115,7 +114,7 @@ impl TokenManager {
             Err(err) => {
                 error!("Error deserializing from response: body={}", text);
                 panic!("{}", err);
-            },
+            }
         };
 
         token_resp.into()
