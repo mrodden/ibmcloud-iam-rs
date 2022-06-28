@@ -167,28 +167,6 @@ fn retrieve_keys(endpoint: &str) -> Result<KeysResponse, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::{Duration, Instant};
-
-    fn get_test_token() -> Token {
-        let access_token = String::from("");
-        let refresh_token = String::from("");
-        let token_type = String::from("test");
-
-        Token {
-            access_token,
-            refresh_token,
-            token_type,
-            expiry: Instant::now() + Duration::from_secs(1200),
-        }
-    }
-
-    #[test]
-    fn test_validate_token() {
-        let token = crate::token::TokenManager::default().token().unwrap();
-
-        let c = validate_token(&token, "https://iam.cloud.ibm.com").unwrap();
-        println!("{:?}", c);
-    }
 
     #[test]
     fn test_validate_iss() {

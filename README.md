@@ -4,19 +4,17 @@ A collection of Rust modules for interacting with IBM Cloud IAM (Identity and Ac
 Current features:
   - Requesting IAM access tokens via an intelligent and thread safe caching mechanism (`TokenManager`)
   - Validating IAM access tokens and inspecting the claims within
-
-Future plans:
   - Authorizing user actions via Subject, Action, Resource requests to the PDP IAM service
 
 # Usage
 
 ## Using the TokenManager to retrieve access tokens
 ```rust
-use ibmcloud_iam::token::TokenManager;
+use ibmcloud_iam::token::{TokenManager, DEFAULT_IAM_ENDPOINT};
 
 // grab an API key from environment variables to use for token getting purposes
 let api_key = std::env::var("IBMCLOUD_API_KEY").unwrap();
-let tm = TokenManager::new(&api_key);
+let tm = TokenManager::new(&api_key, DEFAULT_IAM_ENDPOINT);
 
 // now whenever an access token is needed, call `tm.token()`
 // this will return a cached non-expired Token if possible,
@@ -53,3 +51,7 @@ let claims = validate_token(&token, &endpoint).unwrap();
 
 println!("{:#?}", claims);
 ```
+
+## Authorizing User Actions via PDP
+
+Please see [pdp_auth.rs](examples/pdp_auth.rs) in `examples` for a demonstration on how to interact with PDP

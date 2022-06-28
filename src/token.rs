@@ -17,12 +17,9 @@ use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 use serde_json;
+use tracing::error;
 use url::form_urlencoded;
 
-pub struct TokenManager {
-    api_key: String,
-    token: Arc<Mutex<Option<Token>>>,
-}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
@@ -63,11 +60,18 @@ struct TokenResponse {
     expires_in: Option<u64>,
 }
 
+pub struct TokenManager {
+    api_key: String,
+    token: Arc<Mutex<Option<Token>>>,
+    endpoint: String,
+}
+
 impl TokenManager {
-    pub fn new(api_key: &str) -> Self {
+    pub fn new(api_key: &str, endpoint: &str) -> Self {
         Self {
             api_key: api_key.to_string(),
             token: Arc::new(Mutex::new(None)),
+            endpoint: endpoint.to_string(),
         }
     }
 
@@ -93,8 +97,10 @@ impl TokenManager {
 
         let c = reqwest::blocking::Client::new();
 
+        let path = format!("{}/identity/token", self.endpoint);
+
         let resp = c
-            .post("https://iam.cloud.ibm.com/identity/token")
+            .post(path)
             .header("Authorization", "Basic Yng6Yng=")
             .header("Accept", "application/json")
             .header("Content-Type", "application/x-www-form-urlencoded")
@@ -103,11 +109,20 @@ impl TokenManager {
             .expect("Get token failed");
 
         let text = resp.text().expect("Getting body text failed");
-        let token_resp: TokenResponse = serde_json::from_str(&text).unwrap();
+
+        let token_resp = match serde_json::from_str::<TokenResponse>(&text) {
+            Ok(v) => v,
+            Err(err) => {
+                error!("Error deserializing from response: body={}", text);
+                panic!("{}", err);
+            },
+        };
 
         token_resp.into()
     }
 }
+
+pub const DEFAULT_IAM_ENDPOINT: &str = "https://iam.cloud.ibm.com";
 
 impl Default for TokenManager {
     fn default() -> Self {
@@ -119,17 +134,15 @@ impl Default for TokenManager {
             }
         };
 
-        Self::new(&api_key)
+        Self::new(&api_key, &DEFAULT_IAM_ENDPOINT)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Token, TokenManager};
+    use super::*;
 
-    use std::sync::Arc;
     use std::thread;
-    use std::time::{Duration, Instant};
 
     fn get_test_token() -> Token {
         let access_token = String::from("");
@@ -156,7 +169,7 @@ mod tests {
 
     #[test]
     fn token_caching() {
-        let iam = TokenManager::new("".into());
+        let iam = TokenManager::new("".into(), &DEFAULT_IAM_ENDPOINT);
         *iam.token.lock().unwrap() = Some(get_test_token());
 
         let token = iam.token().unwrap();
@@ -166,7 +179,7 @@ mod tests {
 
     #[test]
     fn threadsafe_cache() {
-        let iam = TokenManager::new("".into());
+        let iam = TokenManager::new("".into(), &DEFAULT_IAM_ENDPOINT);
         *iam.token.lock().unwrap() = Some(get_test_token());
 
         let c = Arc::new(iam);
